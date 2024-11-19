@@ -199,7 +199,7 @@ export class DirectClient {
                 const response = await generateMessageResponse({
                     runtime: runtime,
                     context,
-                    modelClass: ModelClass.SMALL,
+                    modelClass: ModelClass.MEDIUM,
                 });
 
                 // save response to memory
