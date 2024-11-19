@@ -1,9 +1,11 @@
 import { elizaLogger } from "@ai16z/eliza/src/logger.ts";
 import {
     Action,
+    generateText,
     HandlerCallback,
     IAgentRuntime,
     Memory,
+    ModelClass,
     Plugin,
     State,
 } from "@ai16z/eliza";
@@ -11,6 +13,8 @@ import { generateCaption, generateImage } from "@ai16z/eliza";
 
 import fs from "fs";
 import path from "path";
+
+const IMAGE_PROMPT_SYSTEM = `You are an expert in creating prompts for AI art. Important techniques to create high-quality prompts: Specify image style and character style; Pay special attention to camera, lighting, and environment; Be creative and descriptive; Focus on detailed visual descriptions; Describe the scene in a clear, narrative way; Keep descriptions under 50 words; Be direct and straightforward; Avoid metaphors or "like" comparisons.`;
 
 export function saveBase64Image(base64Data: string, filename: string): string {
     // Create generatedImages directory if it doesn't exist
@@ -34,10 +38,7 @@ export function saveBase64Image(base64Data: string, filename: string): string {
     return filepath;
 }
 
-export async function saveHeuristImage(
-    imageUrl: string,
-    filename: string
-): Promise<string> {
+export async function saveHeuristImage(imageUrl: string, filename: string): Promise<string> {
     const imageDir = path.join(process.cwd(), "generatedImages");
     if (!fs.existsSync(imageDir)) {
         fs.mkdirSync(imageDir, { recursive: true });
@@ -48,31 +49,31 @@ export async function saveHeuristImage(
     if (!response.ok) {
         throw new Error(`Failed to fetch image: ${response.statusText}`);
     }
-
+    
     const arrayBuffer = await response.arrayBuffer();
     const imageBuffer = Buffer.from(arrayBuffer);
-
+    
     // Create full file path
     const filepath = path.join(imageDir, `${filename}.png`);
-
+    
     // Save the file
     fs.writeFileSync(filepath, imageBuffer);
-
+    
     return filepath;
 }
 
 const imageGeneration: Action = {
     name: "GENERATE_IMAGE",
     similes: [
-        "IMAGE_GENERATION",
-        "IMAGE_GEN",
-        "CREATE_IMAGE",
+        "IMAGE_GENERATION", 
+        "IMAGE_GEN", 
+        "CREATE_IMAGE", 
         "MAKE_PICTURE",
         "GENERATE_IMAGE",
         "GENERATE_A",
         "DRAW",
         "DRAW_A",
-        "MAKE_A",
+        "MAKE_A"
     ],
     description: "Generate an image to go along with the message.",
     validate: async (runtime: IAgentRuntime, message: Memory) => {
@@ -81,6 +82,7 @@ const imageGeneration: Action = {
         const heuristApiKeyOk = !!runtime.getSetting("HEURIST_API_KEY");
 
         // TODO: Add openai DALL-E generation as well
+
 
         return anthropicApiKeyOk || togetherApiKeyOk || heuristApiKeyOk;
     },
@@ -99,14 +101,20 @@ const imageGeneration: Action = {
         const imagePrompt = message.content.text;
         elizaLogger.log("Image prompt received:", imagePrompt);
 
-        // TODO: Generate a prompt for the image
+        const enhancedPrompt = await generateText({
+            runtime,
+            context: imagePrompt + "\n\n" + IMAGE_PROMPT_SYSTEM,
+            modelClass: ModelClass.SMALL,
+        });
+
+        elizaLogger.log("Enhanced image prompt:", enhancedPrompt);
 
         const res: { image: string; caption: string }[] = [];
 
-        elizaLogger.log("Generating image with prompt:", imagePrompt);
+        elizaLogger.log("Generating image with enhanced prompt:", enhancedPrompt);
         const images = await generateImage(
             {
-                prompt: imagePrompt,
+                prompt: enhancedPrompt,
                 width: 1024,
                 height: 1024,
                 count: 1,
@@ -124,9 +132,9 @@ const imageGeneration: Action = {
 
                 // Save the image and get filepath
                 const filename = `generated_${Date.now()}_${i}`;
-
+                
                 // Choose save function based on image data format
-                const filepath = image.startsWith("http")
+                const filepath = image.startsWith('http') 
                     ? await saveHeuristImage(image, filename)
                     : saveBase64Image(image, filename);
 

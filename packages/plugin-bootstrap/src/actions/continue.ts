@@ -57,7 +57,7 @@ export const continueAction: Action = {
     name: "CONTINUE",
     similes: ["ELABORATE", "KEEP_TALKING"],
     description:
-        "ONLY use this action when the message necessitates a follow up. Do not use this action when the conversation is finished or the user does not wish to speak (use IGNORE instead). If the last message action was CONTINUE, and the user has not responded. Use sparingly.",
+        "ONLY use this action when the message necessitates a follow up (including when user want to generate image but needs more clarification). Do not use this action when the conversation is finished or the user does not wish to speak (use IGNORE instead). If the last message action was CONTINUE, and the user has not responded. Use sparingly.",
     validate: async (runtime: IAgentRuntime, message: Memory) => {
         const recentMessagesData = await runtime.messageManager.getMemories({
             roomId: message.roomId,
