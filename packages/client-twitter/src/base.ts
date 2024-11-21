@@ -14,7 +14,7 @@ import {
     Scraper,
     SearchMode,
     Tweet,
-} from "agent-twitter-client";
+} from "mind-agent-twitter-client";
 import { EventEmitter } from "events";
 import fs from "fs";
 import path from "path";

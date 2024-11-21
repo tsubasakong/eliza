@@ -455,12 +455,12 @@ importers:
       '@ai16z/eliza':
         specifier: workspace:*
         version: link:../core
-      agent-twitter-client:
-        specifier: 0.0.13
-        version: 0.0.13
       glob:
         specifier: 11.0.0
         version: 11.0.0
+      mind-agent-twitter-client:
+        specifier: 0.0.1
+        version: 0.0.1
       whatwg-url:
         specifier: 7.1.0
         version: 7.1.0
@@ -494,10 +494,10 @@ importers:
         version: 10.0.0
       ai:
         specifier: ^3.4.23
-        version: 3.4.33(openai@4.69.0)(react@18.3.1)(svelte@5.2.4)(vue@3.5.13)(zod@3.23.8)
+        version: 3.4.33(openai@4.69.0)(react@18.3.1)(svelte@5.2.7)(vue@3.5.13)(zod@3.23.8)
       anthropic-vertex-ai:
         specifier: ^1.0.0
-        version: 1.0.0(zod@3.23.8)
+        version: 1.0.1(zod@3.23.8)
       fastembed:
         specifier: ^1.14.1
         version: 1.14.1
@@ -567,7 +567,7 @@ importers:
         version: 29.5.14
       '@types/mocha':
         specifier: ^10.0.9
-        version: 10.0.9
+        version: 10.0.10
       '@types/node':
         specifier: 22.8.4
         version: 22.8.4
@@ -997,8 +997,8 @@ packages:
       zod: 3.23.8
     dev: false
 
-  /@ai-sdk/provider-utils@1.0.17(zod@3.23.8):
-    resolution: {integrity: sha512-2VyeTH5DQ6AxqvwdyytKIeiZyYTyJffpufWjE67zM2sXMIHgYl7fivo8m5wVl6Cbf1dFPSGKq//C9s+lz+NHrQ==}
+  /@ai-sdk/provider-utils@1.0.20(zod@3.23.8):
+    resolution: {integrity: sha512-ngg/RGpnA00eNOWEtXHenpX1MsM2QshQh4QJFjUfwcqHpM5kTfG7je7Rc3HcEDP+OkRVv2GF+X4fC1Vfcnl8Ow==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.0.0
@@ -1006,7 +1006,7 @@ packages:
       zod:
         optional: true
     dependencies:
-      '@ai-sdk/provider': 0.0.22
+      '@ai-sdk/provider': 0.0.24
       eventsource-parser: 1.1.2
       nanoid: 3.3.6
       secure-json-parse: 2.7.0
@@ -1045,8 +1045,8 @@ packages:
       zod: 3.23.8
     dev: false
 
-  /@ai-sdk/provider@0.0.22:
-    resolution: {integrity: sha512-smZ1/2jL/JSKnbhC6ama/PxI2D/psj+YAe0c0qpd5ComQCNFltg72VFf0rpUSFMmFuj1pCCNoBOCrvyl8HTZHQ==}
+  /@ai-sdk/provider@0.0.24:
+    resolution: {integrity: sha512-XMsNGJdGO+L0cxhhegtqZ8+T6nn4EoShS819OvCgI2kLbYTIvk0GWFGD0AXJmxkxs3DrpsJxKAFukFR7bvTkgQ==}
     engines: {node: '>=18'}
     dependencies:
       json-schema: 0.4.0
@@ -1101,7 +1101,7 @@ packages:
       - zod
     dev: false
 
-  /@ai-sdk/svelte@0.0.57(svelte@5.2.4)(zod@3.23.8):
+  /@ai-sdk/svelte@0.0.57(svelte@5.2.7)(zod@3.23.8):
     resolution: {integrity: sha512-SyF9ItIR9ALP9yDNAD+2/5Vl1IT6kchgyDH8xkmhysfJI6WrvJbtO1wdQ0nylvPLcsPoYu+cAlz1krU4lFHcYw==}
     engines: {node: '>=18'}
     peerDependencies:
@@ -1112,8 +1112,8 @@ packages:
     dependencies:
       '@ai-sdk/provider-utils': 1.0.22(zod@3.23.8)
       '@ai-sdk/ui-utils': 0.0.50(zod@3.23.8)
-      sswr: 2.1.0(svelte@5.2.4)
-      svelte: 5.2.4
+      sswr: 2.1.0(svelte@5.2.7)
+      svelte: 5.2.7
     transitivePeerDependencies:
       - zod
     dev: false
@@ -2913,7 +2913,7 @@ packages:
       '@cliqz/adblocker': 1.34.0
       '@cliqz/adblocker-content': 1.34.0
       playwright: 1.48.2
-      tldts-experimental: 6.1.61
+      tldts-experimental: 6.1.62
     dev: false
 
   /@cliqz/adblocker@1.34.0:
@@ -2927,7 +2927,7 @@ packages:
       '@remusao/smaz': 1.10.0
       '@types/chrome': 0.0.278
       '@types/firefox-webext-browser': 120.0.4
-      tldts-experimental: 6.1.61
+      tldts-experimental: 6.1.62
     dev: false
 
   /@colors/colors@1.5.0:
@@ -6327,7 +6327,7 @@ packages:
       '@octokit/oauth-app': 7.1.3
       '@octokit/plugin-paginate-rest': 11.3.5(@octokit/core@6.1.2)
       '@octokit/types': 13.6.1
-      '@octokit/webhooks': 13.4.0
+      '@octokit/webhooks': 13.4.1
     dev: false
 
   /@octokit/auth-app@7.1.3:
@@ -6496,8 +6496,8 @@ packages:
     resolution: {integrity: sha512-QBhVjcUa9W7Wwhm6DBFu6ZZ+1/t/oYxqc2tp81Pi41YNuJinbFRx8B133qVOrAaBbF7D/m0Et6f9/pZt9Rc+tg==}
     dev: false
 
-  /@octokit/openapi-webhooks-types@8.4.0:
-    resolution: {integrity: sha512-ooxDnkRsFp07L+k+Giv+Qrmtjy+CnhCwtCDAMyB/hIwB1kIlO32HD1WNDnniezwUt5Rr8bwoPT+Or7PSYHQoOQ==}
+  /@octokit/openapi-webhooks-types@8.5.1:
+    resolution: {integrity: sha512-i3h1b5zpGSB39ffBbYdSGuAd0NhBAwPyA3QV3LYi/lx4lsbZiu7u2UHgXVUR6EpvOI8REOuVh1DZTRfHoJDvuQ==}
     dev: false
 
   /@octokit/plugin-enterprise-rest@6.0.1:
@@ -6664,11 +6664,11 @@ packages:
     engines: {node: '>= 18'}
     dev: false
 
-  /@octokit/webhooks@13.4.0:
-    resolution: {integrity: sha512-3jQ+/zVgqwUYFqcakZ6BQT1eYql+mK91n4GhjWwdhyuBaLRQ6OHrRRJ26MHus51CqLZ8pwqfRdjc8jTBAeaVnA==}
+  /@octokit/webhooks@13.4.1:
+    resolution: {integrity: sha512-I5YPUtfWidh+OzyrlDahJsUpkpGK0kCTmDRbuqGmlCUzOtxdEkX3R4d6Cd08ijQYwkVXQJanPdbKuZBeV2NMaA==}
     engines: {node: '>= 18'}
     dependencies:
-      '@octokit/openapi-webhooks-types': 8.4.0
+      '@octokit/openapi-webhooks-types': 8.5.1
       '@octokit/request-error': 6.1.5
       '@octokit/webhooks-methods': 5.1.0
     dev: false
@@ -8022,7 +8022,7 @@ packages:
         optional: true
     dependencies:
       '@swc/counter': 0.1.3
-      '@swc/types': 0.1.15
+      '@swc/types': 0.1.16
     optionalDependencies:
       '@swc/core-darwin-arm64': 1.9.2
       '@swc/core-darwin-x64': 1.9.2
@@ -8045,8 +8045,8 @@ packages:
     dependencies:
       tslib: 2.8.0
 
-  /@swc/types@0.1.15:
-    resolution: {integrity: sha512-XKaZ+dzDIQ9Ot9o89oJQ/aluI17+VvUnIpYJTcZtvv1iYX6MzHh3Ik2CSR7MdPKpPwfZXHBeCingb2b4PoDVdw==}
+  /@swc/types@0.1.16:
+    resolution: {integrity: sha512-okcPxwxfdKUPrH15TbMcuqMJBu6QcxjHwyhYj1IPyaSAKHY7SHqhaS2UCANaOQ/+E6Dor50IgNpSbeJNqcuehw==}
     dependencies:
       '@swc/counter': 0.1.3
     dev: false
@@ -8384,7 +8384,7 @@ packages:
     resolution: {integrity: sha512-Fgg31wv9QbLDA0SpTOXO3MaxySc4DKGLi8sna4/Utjo4r3ZRPdCt4UQee8BWr+Q5z21yifghREPJGYaEOEIACg==}
     deprecated: This is a stub types definition. dompurify provides its own type definitions, so you do not need this installed.
     dependencies:
-      dompurify: 3.2.0
+      dompurify: 3.2.1
     dev: false
 
   /@types/emscripten@1.39.13:
@@ -8560,8 +8560,8 @@ packages:
     resolution: {integrity: sha512-hov8bUuiLiyFPGyFPE1lwWhmzYbirOXQNNo40+y3zow8aFVTeyn3VWL0VFFfdNddA8S4Vf0Tc062rzyNr7Paag==}
     dev: true
 
-  /@types/mocha@10.0.9:
-    resolution: {integrity: sha512-sicdRoWtYevwxjOHNMPTl3vSfJM6oyW8o1wXeI7uww6b6xHg8eBznQDNSGBCDJmsE8UMxP05JgZRtsKbTqt//Q==}
+  /@types/mocha@10.0.10:
+    resolution: {integrity: sha512-xPyYSz1cMPnJQhl0CLMH68j3gprKZaTjG3s5Vi+fDgx+uhG9NOXwbVt52eFS8ECyXhyKcjDLCBEqBExKuiZb7Q==}
     dev: true
 
   /@types/ms@0.7.34:
@@ -8739,6 +8739,12 @@ packages:
       '@types/node': 22.8.4
       minipass: 4.2.8
     dev: true
+
+  /@types/trusted-types@2.0.7:
+    resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
+    requiresBuild: true
+    dev: false
+    optional: true
 
   /@types/unist@2.0.11:
     resolution: {integrity: sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA==}
@@ -9450,7 +9456,7 @@ packages:
       clean-stack: 2.2.0
       indent-string: 4.0.0
 
-  /ai@3.4.33(openai@4.69.0)(react@18.3.1)(svelte@5.2.4)(vue@3.5.13)(zod@3.23.8):
+  /ai@3.4.33(openai@4.69.0)(react@18.3.1)(svelte@5.2.7)(vue@3.5.13)(zod@3.23.8):
     resolution: {integrity: sha512-plBlrVZKwPoRTmM8+D1sJac9Bq8eaa2jiZlHLZIWekKWI1yMWYZvCCEezY9ASPwRhULYDJB2VhKOBUUeg3S5JQ==}
     engines: {node: '>=18'}
     peerDependencies:
@@ -9475,7 +9481,7 @@ packages:
       '@ai-sdk/provider-utils': 1.0.22(zod@3.23.8)
       '@ai-sdk/react': 0.0.70(react@18.3.1)(zod@3.23.8)
       '@ai-sdk/solid': 0.0.54(zod@3.23.8)
-      '@ai-sdk/svelte': 0.0.57(svelte@5.2.4)(zod@3.23.8)
+      '@ai-sdk/svelte': 0.0.57(svelte@5.2.7)(zod@3.23.8)
       '@ai-sdk/ui-utils': 0.0.50(zod@3.23.8)
       '@ai-sdk/vue': 0.0.59(vue@3.5.13)(zod@3.23.8)
       '@opentelemetry/api': 1.9.0
@@ -9485,7 +9491,7 @@ packages:
       openai: 4.69.0(zod@3.23.8)
       react: 18.3.1
       secure-json-parse: 2.7.0
-      svelte: 5.2.4
+      svelte: 5.2.7
       zod: 3.23.8
       zod-to-json-schema: 3.23.5(zod@3.23.8)
     transitivePeerDependencies:
@@ -9659,14 +9665,14 @@ packages:
     resolution: {integrity: sha512-QXu7BPrP29VllRxH8GwB7x5iX5qWKAAMLqKQGWTeLWVlNHNOpVMJ91dsxQAIWXpjuW5wqvxu3Jd/nRjrJ+0pqg==}
     dev: false
 
-  /anthropic-vertex-ai@1.0.0(zod@3.23.8):
-    resolution: {integrity: sha512-ME1e8kCNLVvVWrR6vB3zFlREEp1kRLmNZUC+oih+tziPkb/li5ESRvzb1eDV+zyhw7tZDDLy7numRllJwdkCEw==}
+  /anthropic-vertex-ai@1.0.1(zod@3.23.8):
+    resolution: {integrity: sha512-Gr/7O1YQTO3oOYtq1tScfkUZXePqZ+5qyoaBrPWgnOsS2VZBfS990mD8D7AIkt+rsx77RrheQ/TBp6c1trqRcw==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.0.0
     dependencies:
-      '@ai-sdk/provider': 0.0.22
-      '@ai-sdk/provider-utils': 1.0.17(zod@3.23.8)
+      '@ai-sdk/provider': 0.0.24
+      '@ai-sdk/provider-utils': 1.0.20(zod@3.23.8)
       google-auth-library: 9.15.0
       zod: 3.23.8
     transitivePeerDependencies:
@@ -12399,8 +12405,10 @@ packages:
     resolution: {integrity: sha512-cTOAhc36AalkjtBpfG6O8JimdTMWNXjiePT2xQH/ppBGi/4uIpmj8eKyIkMJErXWARyINV/sB38yf8JCLF5pbQ==}
     dev: false
 
-  /dompurify@3.2.0:
-    resolution: {integrity: sha512-AMdOzK44oFWqHEi0wpOqix/fUNY707OmoeFDnbi3Q5I8uOpy21ufUA5cDJPr0bosxrflOVD/H2DMSvuGKJGfmQ==}
+  /dompurify@3.2.1:
+    resolution: {integrity: sha512-NBHEsc0/kzRYQd+AY6HR6B/IgsqzBABrqJbpCDQII/OK6h7B7LXzweZTDsqSW2LkTRpoxf18YUP+YjGySk6B3w==}
+    optionalDependencies:
+      '@types/trusted-types': 2.0.7
     dev: false
 
   /domutils@2.8.0:
@@ -17393,6 +17401,20 @@ packages:
     engines: {node: '>=4'}
     dev: true
 
+  /mind-agent-twitter-client@0.0.1:
+    resolution: {integrity: sha512-cMA7S+pfoQzXKLDZ6eZYPKPRlDAbSDVsRdrtRxZAHd6NqO3Yb9x1vbjzBBBdIjwb0rBHs6REZdSSzG0R53Lnhw==}
+    dependencies:
+      '@sinclair/typebox': 0.32.35
+      agent-twitter-client: 0.0.13
+      headers-polyfill: 3.3.0
+      json-stable-stringify: 1.1.1
+      otpauth: 9.3.5
+      set-cookie-parser: 2.7.1
+      tough-cookie: 4.1.4
+      tslib: 2.8.0
+      twitter-api-v2: 1.18.2
+    dev: false
+
   /mini-css-extract-plugin@2.9.2(webpack@5.96.1):
     resolution: {integrity: sha512-GJuACcS//jtq4kCtd5ii/M0SZf7OZRH+BxdqXZHaJfb8TJiVl+NgQRPwiYt2EuqeSkNydn/7vP+bcE27C5mb9w==}
     engines: {node: '>= 12.13.0'}
@@ -22085,12 +22107,12 @@ packages:
       minipass: 7.1.2
     dev: true
 
-  /sswr@2.1.0(svelte@5.2.4):
+  /sswr@2.1.0(svelte@5.2.7):
     resolution: {integrity: sha512-Cqc355SYlTAaUt8iDPaC/4DPPXK925PePLMxyBKuWd5kKc5mwsG3nT9+Mq2tyguL5s7b4Jg+IRMpTRsNTAfpSQ==}
     peerDependencies:
       svelte: ^4.0.0 || ^5.0.0-next.0
     dependencies:
-      svelte: 5.2.4
+      svelte: 5.2.7
       swrev: 4.0.0
     dev: false
 
@@ -22381,8 +22403,8 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
 
-  /svelte@5.2.4:
-    resolution: {integrity: sha512-hsab3Inx/HKV6Y/FUwtX8yCkt+nl6n46zC7Z6y7VWoDFhJWEQ453vP0KmDL42cLm9Q92nZyOE+izANqjss61/A==}
+  /svelte@5.2.7:
+    resolution: {integrity: sha512-cEhPGuLHiH2+Z8B1FwQgiZJgA39uUmJR4516TKrM5zrp0/cuwJkfhUfcTxhAkznanAF5fXUKzvYR4o+Ksx3ZCQ==}
     engines: {node: '>=18'}
     dependencies:
       '@ampproject/remapping': 2.3.0
@@ -22738,14 +22760,14 @@ packages:
     resolution: {integrity: sha512-n1cw8k1k0x4pgA2+9XrOkFydTerNcJ1zWCO5Nn9scWHTD+5tp8dghT2x1uduQePZTZgd3Tupf+x9BxJjeJi77Q==}
     engines: {node: '>=14.0.0'}
 
-  /tldts-core@6.1.61:
-    resolution: {integrity: sha512-In7VffkDWUPgwa+c9picLUxvb0RltVwTkSgMNFgvlGSWveCzGBemBqTsgJCL4EDFWZ6WH0fKTsot6yNhzy3ZzQ==}
+  /tldts-core@6.1.62:
+    resolution: {integrity: sha512-ohONqbfobpuaylhqFbtCzc0dFFeNz85FVKSesgT8DS9OV3a25Yj730pTj7/dDtCqmgoCgEj6gDiU9XxgHKQlBw==}
     dev: false
 
-  /tldts-experimental@6.1.61:
-    resolution: {integrity: sha512-1plwEyCpyYtVsZVtC169C5bStRlDk3cIniMHUeNmAJOjmQGx7SnLM8kS06PQAHx9PPY4Jm1VS6IXZzPC53XpbQ==}
+  /tldts-experimental@6.1.62:
+    resolution: {integrity: sha512-HQAtXbhAaCvqo7eV7q0vdrUO6rPkN1Mzjc2MPnxHzjkMz/YQPfiqWFece8Txni0NRnFaZdMdRYl7cSSO95TlFA==}
     dependencies:
-      tldts-core: 6.1.61
+      tldts-core: 6.1.62
     dev: false
 
   /tmp@0.0.33:
@@ -23044,6 +23066,10 @@ packages:
 
   /tweetnacl@0.14.5:
     resolution: {integrity: sha512-KXXFFdAbFXY4geFIwoyNK+f5Z1b7swfXABfL7HXCmoIWMKU3dmS26672A4EeQtDzLKy7SXmfBu51JolvEKwtGA==}
+    dev: false
+
+  /twitter-api-v2@1.18.2:
+    resolution: {integrity: sha512-ggImmoAeVgETYqrWeZy+nWnDpwgTP+IvFEc03Pitt1HcgMX+Yw17rP38Fb5FFTinuyNvS07EPtAfZ184uIyB0A==}
     dev: false
 
   /tx2@1.0.5:

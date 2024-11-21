@@ -7,7 +7,7 @@
     "dependencies": {
         "@ai16z/eliza": "workspace:*",
         "glob": "11.0.0",
-        "agent-twitter-client": "0.0.13"
+        "mind-agent-twitter-client": "0.0.1"
     },
     "devDependencies": {
         "tsup": "^8.3.5"
