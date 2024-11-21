@@ -757,6 +757,8 @@ export const generateImage = async (
         runtime.getSetting("OPENAI_API_KEY");
     try {
         if (runtime.character.modelProvider === ModelProviderName.HEURIST) {
+            console.log("generating image with heurist");
+            console.log("data", data);
             const response = await fetch(
                 "http://sequencer.heurist.xyz/submit_job",
                 {

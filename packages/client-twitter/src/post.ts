@@ -6,6 +6,7 @@ import { embeddingZeroVector } from "@ai16z/eliza";
 import { IAgentRuntime, ModelClass } from "@ai16z/eliza";
 import { stringToUuid } from "@ai16z/eliza";
 import { ClientBase } from "./base.ts";
+import { generateImage } from "@ai16z/eliza";
 
 const twitterPostTemplate = `{{timeline}}
 
@@ -72,7 +73,8 @@ export class TwitterPostClient extends ClientBase {
             const delay = randomMinutes * 60 * 1000;
 
             setTimeout(() => {
-                this.generateNewTweet();
+                // this.generateNewTweet();
+                this.generateNewTweetWithImage();
                 generateNewTweetLoop(); // Set up next iteration
             }, delay);
 
@@ -80,7 +82,8 @@ export class TwitterPostClient extends ClientBase {
         };
 
         if (postImmediately) {
-            this.generateNewTweet();
+            // this.generateNewTweet();
+            this.generateNewTweetWithImage();
         }
         generateNewTweetLoop();
     }
@@ -214,6 +217,153 @@ export class TwitterPostClient extends ClientBase {
             }
         } catch (error) {
             console.error("Error generating new tweet:", error);
+        }
+    }
+
+    private async generateNewTweetWithImage() {
+        elizaLogger.log("Generating new tweet with image");
+        try {
+            await this.runtime.ensureUserExists(
+                this.runtime.agentId,
+                this.runtime.getSetting("TWITTER_USERNAME"),
+                this.runtime.character.name,
+                "twitter"
+            );
+
+            // Generate image first
+            const imageResult = await generateImage(
+                {
+                    prompt: this.runtime.character.appearance?.description || "A beautiful scene",
+                    width: 1024,
+                    height: 1024,
+                    count: 1,
+                },
+                this.runtime
+            );
+            console.log("imageResult", imageResult);
+
+            if (!imageResult.success || !imageResult.data || imageResult.data.length === 0) {
+                throw new Error("Failed to generate image");
+            }
+
+            // Ensure we have a valid base64 string
+            const base64Data = imageResult.data[0];
+            if (!base64Data) {
+                throw new Error("No image data received");
+            }
+
+            // Handle both URL and base64 formats
+            const imageBuffer = base64Data.startsWith('http') 
+                ? await (async () => {
+                    const response = await fetch(base64Data);
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch image: ${response.statusText}`);
+                    }
+                    return Buffer.from(await response.arrayBuffer());
+                })()
+                : Buffer.from(
+                    base64Data.replace(/^data:image\/\w+;base64,/, ""),
+                    'base64'
+                );
+
+            // Generate tweet content
+            const state = await this.runtime.composeState(
+                {
+                    userId: this.runtime.agentId,
+                    roomId: stringToUuid("twitter_generate_room"),
+                    agentId: this.runtime.agentId,
+                    content: { text: "", action: "" },
+                },
+                {
+                    twitterUserName: this.runtime.getSetting("TWITTER_USERNAME"),
+                    timeline: "",
+                }
+            );
+
+            const context = composeContext({
+                state,
+                template: this.runtime.character.templates?.twitterPostTemplate || twitterPostTemplate,
+            });
+
+            const newTweetContent = await generateText({
+                runtime: this.runtime,
+                context,
+                modelClass: ModelClass.SMALL,
+            });
+
+            const formattedTweet = newTweetContent.replaceAll(/\\n/g, "\n").trim();
+            const content = truncateToCompleteSentence(formattedTweet);
+            console.log("content", content);
+
+            try {
+                const tweetResponse = await this.requestQueue.add(
+                    async () => await this.twitterClient.sendTweetWithMedia(content, [imageBuffer])
+                );
+
+                if (!tweetResponse.ok) {
+                    throw new Error(`Failed to send tweet: ${tweetResponse.statusText}`);
+                }
+
+                const responseBody = await tweetResponse.json();
+                if (!responseBody?.data?.create_tweet?.tweet_results?.result) {
+                    throw new Error("Invalid response format from Twitter API");
+                }
+
+                const tweetResult = responseBody.data.create_tweet.tweet_results.result;
+                const mediaUrl = responseBody.data?.create_tweet?.tweet_results?.result?.legacy?.entities?.media?.[0]?.media_url_https;
+
+                const tweet = {
+                    id: tweetResult.rest_id,
+                    text: tweetResult.legacy.full_text,
+                    conversationId: tweetResult.legacy.conversation_id_str,
+                    createdAt: tweetResult.legacy.created_at,
+                    userId: tweetResult.legacy.user_id_str,
+                    inReplyToStatusId: tweetResult.legacy.in_reply_to_status_id_str,
+                    permanentUrl: `https://twitter.com/${this.runtime.getSetting("TWITTER_USERNAME")}/status/${tweetResult.rest_id}`,
+                    hashtags: [],
+                    mentions: [],
+                    photos: [{
+                        id: `${tweetResult.rest_id}_photo`,
+                        url: mediaUrl || base64Data,
+                        alt_text: "Generated image"
+                    }],
+                    thread: [],
+                    urls: [],
+                    videos: [],
+                } as Tweet;
+
+                const postId = tweet.id;
+                const conversationId = tweet.conversationId + "-" + this.runtime.agentId;
+                const roomId = stringToUuid(conversationId);
+
+                await this.runtime.ensureRoomExists(roomId);
+                await this.runtime.ensureParticipantInRoom(
+                    this.runtime.agentId,
+                    roomId
+                );
+
+                await this.cacheTweet(tweet);
+
+                await this.runtime.messageManager.createMemory({
+                    id: stringToUuid(postId + "-" + this.runtime.agentId),
+                    userId: this.runtime.agentId,
+                    agentId: this.runtime.agentId,
+                    content: {
+                        text: newTweetContent.trim(),
+                        url: tweet.permanentUrl,
+                        source: "twitter",
+                    },
+                    roomId,
+                    embedding: embeddingZeroVector,
+                    createdAt: tweet.timestamp * 1000,
+                });
+            } catch (error) {
+                console.error("Error sending tweet with image:", error);
+                throw error;
+            }
+        } catch (error) {
+            console.error("Error generating new tweet with image:", error);
+            throw error;
         }
     }
 }

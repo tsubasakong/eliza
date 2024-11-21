@@ -377,6 +377,9 @@ export type Character = {
         bio: string;
         nicknames?: string[];
     };
+    appearance?: {
+        description?: string;
+    }
 };
 
 export interface IDatabaseAdapter {
