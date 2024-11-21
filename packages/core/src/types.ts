@@ -379,6 +379,8 @@ export type Character = {
     };
     appearance?: {
         description?: string;
+        imagePromptExamples?: string[];
+        imageStyle?: string;
     }
 };
 

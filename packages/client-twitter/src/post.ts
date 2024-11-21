@@ -231,9 +231,16 @@ export class TwitterPostClient extends ClientBase {
             );
 
             // Generate image first
+            const description = this.runtime.character.appearance?.description || "A beautiful scene";
+            const imagePromptExamples = this.runtime.character.appearance?.imagePromptExamples || [];
+            const selectedPrompt = imagePromptExamples.length > 0 ? imagePromptExamples[Math.floor(Math.random() * imagePromptExamples.length)] : "";
+            const imageStyle = this.runtime.character.appearance?.imageStyle || "";
+
+            const agentImagePrompt = `${description}\n${selectedPrompt}\n${imageStyle}`;
+            console.log("agentImagePrompt", agentImagePrompt);
             const imageResult = await generateImage(
                 {
-                    prompt: this.runtime.character.appearance?.description || "A beautiful scene",
+                    prompt: agentImagePrompt,
                     width: 1024,
                     height: 1024,
                     count: 1,
@@ -288,7 +295,7 @@ export class TwitterPostClient extends ClientBase {
             const newTweetContent = await generateText({
                 runtime: this.runtime,
                 context,
-                modelClass: ModelClass.SMALL,
+                modelClass: ModelClass.MEDIUM,
             });
 
             const formattedTweet = newTweetContent.replaceAll(/\\n/g, "\n").trim();
