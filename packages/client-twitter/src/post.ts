@@ -151,7 +151,7 @@ export class TwitterPostClient extends ClientBase {
             const newTweetContent = await generateText({
                 runtime: this.runtime,
                 context,
-                modelClass: ModelClass.SMALL,
+                modelClass: ModelClass.MEDIUM,
             });
 
             // Replace \n with proper line breaks and trim excess spaces
@@ -220,6 +220,14 @@ export class TwitterPostClient extends ClientBase {
         }
     }
 
+    /**
+     * Generate a new tweet with an image.
+     * Requirements:
+     * - Generate a tweet content
+     * - Generate an image prompt based the tweet content
+     * - Generate an image with the prompt
+     * - Send the tweet with the image
+     */
     private async generateNewTweetWithImage() {
         elizaLogger.log("Generating new tweet with image");
         try {
@@ -230,24 +238,69 @@ export class TwitterPostClient extends ClientBase {
                 "twitter"
             );
 
-            // Generate image first
-            const description = this.runtime.character.appearance?.description || "A beautiful scene";
-            const imagePromptExamples = this.runtime.character.appearance?.imagePromptExamples || [];
-            const selectedPrompt = imagePromptExamples.length > 0 ? imagePromptExamples[Math.floor(Math.random() * imagePromptExamples.length)] : "";
-            const imageStyle = this.runtime.character.appearance?.imageStyle || "";
+            // First generate tweet content
+            const state = await this.runtime.composeState(
+                {
+                    userId: this.runtime.agentId,
+                    roomId: stringToUuid("twitter_generate_room"),
+                    agentId: this.runtime.agentId,
+                    content: { text: "", action: "" },
+                },
+                {
+                    twitterUserName:
+                        this.runtime.getSetting("TWITTER_USERNAME"),
+                }
+            );
 
-            const agentImagePrompt = `${description}\n${selectedPrompt}\n${imageStyle}`;
-            console.log("agentImagePrompt", agentImagePrompt);
+            const context = composeContext({
+                state,
+                template: this.runtime.character.templates?.twitterPostTemplate || twitterPostTemplate,
+            });
+
+            const newTweetContent = await generateText({
+                runtime: this.runtime,
+                context,
+                modelClass: ModelClass.MEDIUM,
+            });
+
+            const formattedTweet = newTweetContent.replaceAll(/\\n/g, "\n").trim();
+            const content = truncateToCompleteSentence(formattedTweet);
+
+            console.log("💬 Tweet content:", content);
+
+            // Generate enhanced image prompt from the tweet content
+            const SUBJECT    = this.runtime.character.appearance?.description || this.runtime.character.name;
+            const CONTENT = content;
+            const STYLE = this.runtime.character.appearance?.imageStyle || "";
+            const IMAGE_PROMPT_INPUT = `You are tasked with generating an image prompt based on a tweet post, a given subject, and a specified style. 
+            Your goal is to create a detailed and vivid image prompt that captures the essence of the tweet while incorporating the provided subject and style.\n\nYou will be given the following inputs:\n<tweet_text>\n${CONTENT}\n</tweet_text>\n\n<subject>\n${SUBJECT}\n</subject>\n\n<style>\n${STYLE}\n</style>\n\nA good image prompt consists of the following elements:\n1. Main subject\n2. Detailed description\n3. Style\n4. Lighting\n5. Composition\n6. Quality modifiers\n\nTo generate the image prompt, follow these steps:\n\n1. Analyze the tweet text carefully, identifying key themes, emotions, and visual elements mentioned or implied.\n\n2. Consider how the given subject relates to the tweet's content. If there's no clear connection, think creatively about how to incorporate the subject in a way that complements the tweet's message.\n\n3. Determine an appropriate environment or setting based on the tweet's context and the given subject.\n\n4. Decide on suitable lighting that enhances the mood or atmosphere of the scene.\n\n5. Choose a color palette that reflects the tweet's tone and complements the subject and style.\n\n6. Identify the overall mood or emotion conveyed by the tweet.\n\n7. Plan a composition that effectively showcases the subject and captures the tweet's essence.\n\n8. Incorporate the specified style into your description, considering how it affects the overall look and feel of the image.\n\n9. Use concrete nouns and avoid abstract concepts when describing the main subject and elements of the scene.\n\nConstruct your image prompt using the following structure:\n\n1. Main subject: Describe the primary focus of the image, incorporating the given subject.\n2. Environment: Detail the setting or background.\n3. Lighting: Specify the type and quality of light in the scene.\n4. Colors: Mention the key colors and their relationships.\n5. Mood: Convey the overall emotional tone.\n6. Composition: Describe how elements are arranged in the frame.\n7. Style: Incorporate the given style into the description.\n\nWrite your final image prompt inside <image_prompt> tags. Ensure that your prompt is detailed, vivid, and incorporates all the elements mentioned above while staying true to the tweet's content, the given subject, and the specified style. LIMIT the image prompt 50 words or less. JUST OUPTPUT text for final image prompt.`;
+
+            console.log("🎨 Image prompt input:", IMAGE_PROMPT_INPUT);
+
+
+
+            const enhancedPrompt = await generateText({
+                runtime: this.runtime,
+                context: IMAGE_PROMPT_INPUT,
+                modelClass: ModelClass.LARGE,
+            });
+            console.log("🎨 Enhanced prompt:", enhancedPrompt);
+            
+
+            // input prompt to generate image
+            const imagePrompt = enhancedPrompt.replaceAll(/<image_prompt>/g, "").replaceAll(/<\/image_prompt>/g, "").trim();
+            console.log("🎨 Image prompt:", imagePrompt);
+
+            // Generate image with enhanced prompt
             const imageResult = await generateImage(
                 {
-                    prompt: agentImagePrompt,
+                    prompt: imagePrompt,
                     width: 1024,
                     height: 1024,
                     count: 1,
                 },
                 this.runtime
             );
-            console.log("imageResult", imageResult);
 
             if (!imageResult.success || !imageResult.data || imageResult.data.length === 0) {
                 throw new Error("Failed to generate image");
@@ -272,35 +325,6 @@ export class TwitterPostClient extends ClientBase {
                     base64Data.replace(/^data:image\/\w+;base64,/, ""),
                     'base64'
                 );
-
-            // Generate tweet content
-            const state = await this.runtime.composeState(
-                {
-                    userId: this.runtime.agentId,
-                    roomId: stringToUuid("twitter_generate_room"),
-                    agentId: this.runtime.agentId,
-                    content: { text: "", action: "" },
-                },
-                {
-                    twitterUserName: this.runtime.getSetting("TWITTER_USERNAME"),
-                    timeline: "",
-                }
-            );
-
-            const context = composeContext({
-                state,
-                template: this.runtime.character.templates?.twitterPostTemplate || twitterPostTemplate,
-            });
-
-            const newTweetContent = await generateText({
-                runtime: this.runtime,
-                context,
-                modelClass: ModelClass.MEDIUM,
-            });
-
-            const formattedTweet = newTweetContent.replaceAll(/\\n/g, "\n").trim();
-            const content = truncateToCompleteSentence(formattedTweet);
-            console.log("content", content);
 
             try {
                 const tweetResponse = await this.requestQueue.add(
