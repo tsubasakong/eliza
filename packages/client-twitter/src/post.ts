@@ -73,10 +73,9 @@ export class TwitterPostClient extends ClientBase {
             const delay = randomMinutes * 60 * 1000;
 
             setTimeout(() => {
-                this.generateNewTweet();
-                // setTimeout(() => {
-                //     this.generateNewTweetWithImage();
-                // }, 10000 + Math.floor(Math.random() * 5000));
+                // this.generateNewTweet();
+                this.generateNewTweetWithImage();
+      
                 // generateNewTweetLoop(); // Set up next iteration
             }, delay);
 
