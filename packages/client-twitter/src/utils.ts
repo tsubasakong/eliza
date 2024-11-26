@@ -186,6 +186,7 @@ export async function sendTweet(
         );
         // Parse the response
         const body = await result.json();
+        console.log("utils sendTweet >>> body: ", body);
         const tweetResult = body.data.create_tweet.tweet_results.result;
 
         const finalTweet: Tweet = {
@@ -340,7 +341,9 @@ export async function sendTweetWithMedia(
     );
 
     const body = await result.json();
+    console.log("utils sendTweetWithMedia >>> body: ", body);
     const tweetResult = body.data.create_tweet.tweet_results.result;
+    
 
     const finalTweet: Tweet = {
         id: tweetResult.rest_id,

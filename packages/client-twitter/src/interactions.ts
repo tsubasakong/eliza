@@ -66,6 +66,7 @@ Response options are RESPOND, IGNORE and STOP .
 {{agentName}} should RESPOND to messages that are directed at them, or participate in conversations that are interesting or relevant to their background.
 If a message is not interesting or relevant, {{agentName}} should IGNORE.
 Unless directly RESPONDing to a user, {{agentName}} should IGNORE messages that are very short or do not contain much information.
+DO NOT IGNORE messages that related to image generation requests.
 If a user asks {{agentName}} to stop talking, {{agentName}} should STOP.
 If {{agentName}} concludes a conversation and isn't part of the conversation anymore, {{agentName}} should STOP.
 
@@ -88,7 +89,7 @@ export class TwitterInteractionClient extends ClientBase {
             this.handleTwitterInteractions();
             setTimeout(
                 handleTwitterInteractionsLoop,
-                (Math.floor(Math.random() * (2 - 1 + 1)) + 1) * 60 * 1000
+                (Math.floor(Math.random() * (2 - 1 + 1)) + 1) * 30 * 1000
             ); // Random interval between 1-2 minutes
         };
         handleTwitterInteractionsLoop();
@@ -107,7 +108,7 @@ export class TwitterInteractionClient extends ClientBase {
             const tweetCandidates = (
                 await this.fetchSearchTweets(
                     `@${this.runtime.getSetting("TWITTER_USERNAME")}`,
-                    20,
+                    40,
                     SearchMode.Latest
                 )
             ).tweets;
@@ -122,11 +123,18 @@ export class TwitterInteractionClient extends ClientBase {
 
             // for each tweet candidate, handle the tweet
             for (const tweet of uniqueTweetCandidates) {
-                // console.log("tweet:", tweet);
-                if (
-                    !this.lastCheckedTweetId ||
-                    parseInt(tweet.id) > this.lastCheckedTweetId
-                ) {
+                if (!this.lastCheckedTweetId || parseInt(tweet.id) > this.lastCheckedTweetId) {
+                    // Generate the tweetId UUID the same way it's done in handleTweet
+                    const tweetId = stringToUuid(tweet.id + "-" + this.runtime.agentId);
+                    
+                    // Check if we've already processed this tweet
+                    const existingResponse = await this.runtime.messageManager.getMemoryById(tweetId);
+                    
+                    if (existingResponse) {
+                        elizaLogger.log(`Already responded to tweet ${tweet.id}, skipping`);
+                        continue;
+                    }
+
                     const conversationId =
                         tweet.conversationId + "-" + this.runtime.agentId;
 
@@ -361,68 +369,14 @@ export class TwitterInteractionClient extends ClientBase {
         
         if (response.text) {
             try {
-                const callback: HandlerCallback = async (response: Content) => {
-                    console.log("response.action in callback: ", response.action);
-                    // Check if response has an image action
-                    if (response.action === "GENERATE_IMAGE") {
-                        const imageResult = await generateImage(
-                            {
-                                prompt: response.text,
-                                width: 1024,
-                                height: 1024,
-                                count: 1,
-                            },
-                            this.runtime
-                        );
-
-                        if (!imageResult.success || !imageResult.data || imageResult.data.length === 0) {
-                            throw new Error("Failed to generate image");
-                        }
-
-                        const base64Data = imageResult.data[0];
-                        if (!base64Data) {
-                            throw new Error("No image data received");
-                        }
-
-                        // Handle both URL and base64 formats
-                        const imageBuffer = base64Data.startsWith('http') 
-                            ? await (async () => {
-                                const response = await fetch(base64Data);
-                                if (!response.ok) {
-                                    throw new Error(`Failed to fetch image: ${response.statusText}`);
-                                }
-                                return Buffer.from(await response.arrayBuffer());
-                            })()
-                            : Buffer.from(
-                                base64Data.replace(/^data:image\/\w+;base64,/, ""),
-                                'base64'
-                            );
-                        
-                        // Send tweet with media and return memories
-                        const memories = await sendTweetWithMedia(
-                            this,
-                            response,
-                            message.roomId,
-                            this.runtime.getSetting("TWITTER_USERNAME"),
-                            tweet.id,
-                            [imageBuffer]
-                        );
-                        return memories;
-                    }
-
-                    // Default behavior for non-image tweets
-                    const memories = await sendTweet(
-                        this,
-                        response,
-                        message.roomId,
-                        this.runtime.getSetting("TWITTER_USERNAME"),
-                        tweet.id
-                    );
-                    return memories;
-                };
-
                 // Move the callback execution outside the try block
-                const responseMessages = await callback(response);
+                const responseMessages = await sendTweet(
+                    this,
+                    response,
+                    message.roomId,
+                    this.runtime.getSetting("TWITTER_USERNAME"),
+                    tweet.id
+                );
 
                 console.log("responseMessages: ", responseMessages);
 
@@ -445,11 +399,45 @@ export class TwitterInteractionClient extends ClientBase {
                 }
 
                 await this.runtime.evaluate(message, state);
-
+                console.log("responseMessages >>>>>>>>", responseMessages);
+                // Process actions with the image generation callback
                 await this.runtime.processActions(
                     message,
                     responseMessages,
-                    state
+                    state,
+                    async (content: Content, files?: Array<{ attachment: string; name: string }>) => {
+                        console.log("callback >>>>>>>>", content); 
+                        console.log("files >>>>>>>>", files); 
+                        if (content.action === "GENERATE_IMAGE" && files && files.length > 0) {
+                            // Read the image files that were saved by the plugin
+                            const imageBuffers = await Promise.all(
+                                files.map(async file => {
+                                    const imageBuffer = await fs.promises.readFile(file.attachment);
+                                    return imageBuffer;
+                                })
+                            );
+                            
+                            // Send tweet with media
+                            content.text = "here you go!";
+                            return await sendTweetWithMedia(
+                                this,
+                                content,
+                                message.roomId,
+                                this.runtime.getSetting("TWITTER_USERNAME"),
+                                tweet.id,
+                                imageBuffers
+                            );
+                        }
+
+                        // Default behavior for non-image tweets
+                        // return await sendTweet(
+                        //     this,
+                        //     content,
+                        //     message.roomId,
+                        //     this.runtime.getSetting("TWITTER_USERNAME"),
+                        //     tweet.id
+                        // );
+                    }
                 );
                 const responseInfo = `Context:\n\n${context}\n\nSelected Post: ${tweet.id} - ${tweet.username}: ${tweet.text}\nAgent's Output:\n${response.text}`;
                 // f tweets folder dont exist, create

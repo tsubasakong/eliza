@@ -505,7 +505,7 @@ export class AgentRuntime implements IAgentRuntime {
         }
 
         elizaLogger.success(`Executing handler for action: ${action.name}`);
-        await action.handler(this, message, state, {}, callback);
+        await action.handler(this, message, state, {responseMsg: responses[0].content.text}, callback);
     }
 
     /**
