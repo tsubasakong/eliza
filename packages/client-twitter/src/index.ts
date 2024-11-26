@@ -8,7 +8,7 @@ class TwitterAllClient {
     search: TwitterSearchClient;
     interaction: TwitterInteractionClient;
     constructor(runtime: IAgentRuntime) {
-        this.post = new TwitterPostClient(runtime);
+        // this.post = new TwitterPostClient(runtime);
         // this.search = new TwitterSearchClient(runtime); // don't start the search client by default
         // this searches topics from character file, but kind of violates consent of random users
         // burns your rate limit and can get your account banned

@@ -321,3 +321,63 @@ function splitParagraph(paragraph: string, maxLength: number): string[] {
 
     return chunks;
 }
+
+export async function sendTweetWithMedia(
+    client: ClientBase,
+    content: Content,
+    roomId: UUID,
+    twitterUsername: string,
+    inReplyTo: string,
+    mediaBuffers: Buffer[]
+): Promise<Memory[]> {
+    const result = await client.requestQueue.add(
+        async () =>
+            await client.twitterClient.sendTweetWithMedia(
+                content.text.trim(),
+                mediaBuffers,
+                inReplyTo
+            )
+    );
+
+    const body = await result.json();
+    const tweetResult = body.data.create_tweet.tweet_results.result;
+
+    const finalTweet: Tweet = {
+        id: tweetResult.rest_id,
+        text: tweetResult.legacy.full_text,
+        conversationId: tweetResult.legacy.conversation_id_str,
+        timestamp: tweetResult.timestamp * 1000,
+        userId: tweetResult.legacy.user_id_str,
+        inReplyToStatusId: inReplyTo || tweetResult.legacy.in_reply_to_status_id_str,
+        permanentUrl: `https://twitter.com/${twitterUsername}/status/${tweetResult.rest_id}`,
+        hashtags: [],
+        mentions: [],
+        photos: [{
+            id: `${tweetResult.rest_id}_photo`,
+            url: tweetResult.legacy?.entities?.media?.[0]?.media_url_https || '',
+            alt_text: "Generated image"
+        }],
+        thread: [],
+        urls: [],
+        videos: [],
+    };
+
+    const memories: Memory[] = [{
+        id: stringToUuid(finalTweet.id + "-" + client.runtime.agentId),
+        agentId: client.runtime.agentId,
+        userId: client.runtime.agentId,
+        content: {
+            text: finalTweet.text,
+            source: "twitter",
+            url: finalTweet.permanentUrl,
+            inReplyTo: inReplyTo
+                ? stringToUuid(inReplyTo + "-" + client.runtime.agentId)
+                : undefined,
+        },
+        roomId,
+        embedding: embeddingZeroVector,
+        createdAt: finalTweet.timestamp * 1000,
+    }];
+
+    return memories;
+}

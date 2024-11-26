@@ -73,9 +73,11 @@ export class TwitterPostClient extends ClientBase {
             const delay = randomMinutes * 60 * 1000;
 
             setTimeout(() => {
-                // this.generateNewTweet();
-                this.generateNewTweetWithImage();
-                generateNewTweetLoop(); // Set up next iteration
+                this.generateNewTweet();
+                // setTimeout(() => {
+                //     this.generateNewTweetWithImage();
+                // }, 10000 + Math.floor(Math.random() * 5000));
+                // generateNewTweetLoop(); // Set up next iteration
             }, delay);
 
             elizaLogger.log(`Next tweet scheduled in ${randomMinutes} minutes`);

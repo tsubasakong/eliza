@@ -13,8 +13,10 @@ import {
 } from "@ai16z/eliza";
 import { stringToUuid } from "@ai16z/eliza";
 import { ClientBase } from "./base.ts";
-import { buildConversationThread, sendTweet, wait } from "./utils.ts";
+import { buildConversationThread, sendTweet, sendTweetWithMedia,wait } from "./utils.ts";
 import { embeddingZeroVector } from "@ai16z/eliza";
+import { generateText } from "@ai16z/eliza";
+import { generateImage } from "@ai16z/eliza";
 
 export const twitterMessageHandlerTemplate =
     `{{timeline}}
@@ -86,8 +88,8 @@ export class TwitterInteractionClient extends ClientBase {
             this.handleTwitterInteractions();
             setTimeout(
                 handleTwitterInteractionsLoop,
-                (Math.floor(Math.random() * (5 - 2 + 1)) + 2) * 60 * 1000
-            ); // Random interval between 2-5 minutes
+                (Math.floor(Math.random() * (2 - 1 + 1)) + 1) * 60 * 1000
+            ); // Random interval between 1-2 minutes
         };
         handleTwitterInteractionsLoop();
     }
@@ -206,8 +208,9 @@ export class TwitterInteractionClient extends ClientBase {
         message: Memory;
         thread: Tweet[];
     }) {
+        console.log(">>> handling tweet", tweet.id);
         if (tweet.username === this.runtime.getSetting("TWITTER_USERNAME")) {
-            // console.log("skipping tweet from bot itself", tweet.id);
+            console.log("skipping tweet from bot itself", tweet.id);
             // Skip processing if the tweet is from the bot itself
             return;
         }
@@ -312,12 +315,15 @@ export class TwitterInteractionClient extends ClientBase {
         });
 
         console.log("composeContext done");
+        console.log("shouldRespondContext: ", shouldRespondContext);
 
         const shouldRespond = await generateShouldRespond({
             runtime: this.runtime,
             context: shouldRespondContext,
             modelClass: ModelClass.MEDIUM,
         });
+        
+        console.log("shouldRespond: ", shouldRespond);
 
         // Promise<"RESPOND" | "IGNORE" | "STOP" | null> {
         if (shouldRespond !== "RESPOND") {
@@ -334,11 +340,15 @@ export class TwitterInteractionClient extends ClientBase {
                 twitterMessageHandlerTemplate,
         });
 
+        console.log("context >>>: ", context);
+
         const response = await generateMessageResponse({
             runtime: this.runtime,
             context,
             modelClass: ModelClass.MEDIUM,
         });
+
+        console.log("response: ", response);
 
         const removeQuotes = (str: string) =>
             str.replace(/^['"](.*)['"]$/, "$1");
@@ -348,10 +358,59 @@ export class TwitterInteractionClient extends ClientBase {
         response.inReplyTo = stringId;
 
         response.text = removeQuotes(response.text);
-
+        
         if (response.text) {
             try {
                 const callback: HandlerCallback = async (response: Content) => {
+                    console.log("response.action in callback: ", response.action);
+                    // Check if response has an image action
+                    if (response.action === "GENERATE_IMAGE") {
+                        const imageResult = await generateImage(
+                            {
+                                prompt: response.text,
+                                width: 1024,
+                                height: 1024,
+                                count: 1,
+                            },
+                            this.runtime
+                        );
+
+                        if (!imageResult.success || !imageResult.data || imageResult.data.length === 0) {
+                            throw new Error("Failed to generate image");
+                        }
+
+                        const base64Data = imageResult.data[0];
+                        if (!base64Data) {
+                            throw new Error("No image data received");
+                        }
+
+                        // Handle both URL and base64 formats
+                        const imageBuffer = base64Data.startsWith('http') 
+                            ? await (async () => {
+                                const response = await fetch(base64Data);
+                                if (!response.ok) {
+                                    throw new Error(`Failed to fetch image: ${response.statusText}`);
+                                }
+                                return Buffer.from(await response.arrayBuffer());
+                            })()
+                            : Buffer.from(
+                                base64Data.replace(/^data:image\/\w+;base64,/, ""),
+                                'base64'
+                            );
+                        
+                        // Send tweet with media and return memories
+                        const memories = await sendTweetWithMedia(
+                            this,
+                            response,
+                            message.roomId,
+                            this.runtime.getSetting("TWITTER_USERNAME"),
+                            tweet.id,
+                            [imageBuffer]
+                        );
+                        return memories;
+                    }
+
+                    // Default behavior for non-image tweets
                     const memories = await sendTweet(
                         this,
                         response,
@@ -362,7 +421,10 @@ export class TwitterInteractionClient extends ClientBase {
                     return memories;
                 };
 
+                // Move the callback execution outside the try block
                 const responseMessages = await callback(response);
+
+                console.log("responseMessages: ", responseMessages);
 
                 state = (await this.runtime.updateRecentMessageState(
                     state
@@ -394,7 +456,9 @@ export class TwitterInteractionClient extends ClientBase {
                 if (!fs.existsSync("tweets")) {
                     fs.mkdirSync("tweets");
                 }
+                console.log("responseInfo: ", responseInfo);
                 const debugFileName = `tweets/tweet_generation_${tweet.id}.txt`;
+                
                 fs.writeFileSync(debugFileName, responseInfo);
                 await wait();
             } catch (error) {
