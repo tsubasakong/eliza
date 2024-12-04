@@ -40,7 +40,7 @@ export function saveBase64Image(base64Data: string, filename: string): string {
     return filepath;
 }
 
-export async function saveHeuristImage(imageUrl: string, filename: string): Promise<string> {
+export async function saveImageFromUrl(imageUrl: string, filename: string): Promise<string> {
     const imageDir = path.join(process.cwd(), "generatedImages");
     if (!fs.existsSync(imageDir)) {
         fs.mkdirSync(imageDir, { recursive: true });
@@ -185,7 +185,7 @@ Ensure that your prompt is detailed, vivid, and incorporates all the elements me
                 
                 // Choose save function based on image data format
                 const filepath = image.startsWith('http') 
-                    ? await saveHeuristImage(image, filename)
+                    ? await saveImageFromUrl(image, filename)
                     : saveBase64Image(image, filename);
 
                 elizaLogger.log(`Processing image ${i + 1}:`, filename);

@@ -73,8 +73,21 @@ export class TwitterPostClient extends ClientBase {
             const delay = randomMinutes * 60 * 1000;
 
             setTimeout(() => {
-                // this.generateNewTweet();
-                this.generateNewTweetWithImage();
+                // Get the probability from character settings or default to 0.5
+                const imagePostProbability = 
+                    this.runtime.character.settings?.twitter?.imagePostProbability || 0.5;
+                
+                // Generate random number between 0 and 1
+                const random = Math.random();
+                console.log("🎲 Random number:", random);
+                // Choose which type of tweet to generate based on probability
+                if (random < imagePostProbability) {
+                    console.log("🎲 Generating tweet with image");
+                    this.generateNewTweetWithImage();
+                } else {
+                    console.log("🎲 Generating tweet");
+                    this.generateNewTweet();
+                }
       
                 // generateNewTweetLoop(); // Set up next iteration
             }, delay);
@@ -83,8 +96,13 @@ export class TwitterPostClient extends ClientBase {
         };
 
         if (postImmediately) {
-            // this.generateNewTweet();
-            this.generateNewTweetWithImage();
+            const imagePostProbability = 
+                this.runtime.character.settings?.twitter?.imagePostProbability || 0.5;
+            if (Math.random() < imagePostProbability) {
+                this.generateNewTweetWithImage();
+            } else {
+                this.generateNewTweet();
+            }
         }
         generateNewTweetLoop();
     }

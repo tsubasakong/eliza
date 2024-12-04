@@ -355,6 +355,9 @@ export type Character = {
         };
         model?: string;
         embeddingModel?: string;
+        twitter?: {
+            imagePostProbability?: number;
+        };
     };
     clientConfig?: {
         discord?: {
@@ -694,3 +697,8 @@ export enum LoggingLevel {
     VERBOSE = "verbose",
     NONE = "none",
 }
+
+export interface TwitterSettings {
+    imagePostProbability: number;
+}
+
